@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
         
         GameFieldSize = Vector3.Scale(gameFieldBackground.sprite.bounds.size, gameFieldBackground.transform.localScale);
         SetupBorders();
-    }
+    } 
 
     private void SetupBorders()
     {
