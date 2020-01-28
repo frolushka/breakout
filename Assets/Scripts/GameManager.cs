@@ -2,6 +2,12 @@
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager Instance { get; private set; }
+    
+    public Vector2 GameFieldSize { get; private set; }
+
+    [SerializeField] private SpriteRenderer gameFieldBackground;
+    
     [SerializeField] private EdgeCollider2D leftBorder;
     [SerializeField] private EdgeCollider2D rightBorder;
     [SerializeField] private EdgeCollider2D bottomBorder;
@@ -9,16 +15,20 @@ public class GameManager : MonoBehaviour
     
     private void Awake()
     {
-        ScreenUtility.Setup();
+        if (Instance == null)
+            Instance = this;
+        
+        GameFieldSize = Vector3.Scale(gameFieldBackground.sprite.bounds.size, gameFieldBackground.transform.localScale);
         SetupBorders();
     }
 
     private void SetupBorders()
     {
-        var leftBottom = new Vector2(ScreenUtility.LeftSideCoordinate, ScreenUtility.BottomSideCoordinate);
-        var rightBottom = new Vector2(ScreenUtility.RightSideCoordinate, ScreenUtility.BottomSideCoordinate);
-        var leftTop = new Vector2(ScreenUtility.LeftSideCoordinate, ScreenUtility.TopSideCoordinate);
-        var rightTop = new Vector2(ScreenUtility.RightSideCoordinate, ScreenUtility.TopSideCoordinate);
+        var p = gameFieldBackground.transform.position;
+        var leftBottom = new Vector2(p.x - GameFieldSize.x / 2, p.y - GameFieldSize.y / 2);
+        var rightBottom = new Vector2(p.x + GameFieldSize.x / 2, p.y - GameFieldSize.y / 2);
+        var leftTop = new Vector2(p.x - GameFieldSize.x / 2, p.y + GameFieldSize.y / 2);
+        var rightTop = new Vector2(p.x + GameFieldSize.x / 2, p.y + GameFieldSize.y / 2);
         
         leftBorder.points = new [] { leftBottom, leftTop };
         rightBorder.points = new [] { rightBottom, rightTop };

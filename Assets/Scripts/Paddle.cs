@@ -29,8 +29,8 @@ public class Paddle : MonoBehaviour
         var axis = Input.GetAxisRaw(moveAxis);
         var newPosition = t.position + moveSpeed * Time.deltaTime * axis * Vector3.right;
 
-        newPosition.x = Mathf.Max(newPosition.x, ScreenUtility.LeftSideCoordinate + size / 2);
-        newPosition.x = Mathf.Min(newPosition.x, ScreenUtility.RightSideCoordinate - size / 2);
+        newPosition.x = Mathf.Max(newPosition.x, (size - GameManager.Instance.GameFieldSize.x) / 2);
+        newPosition.x = Mathf.Min(newPosition.x, (GameManager.Instance.GameFieldSize.x - size) / 2);
         
         rb.MovePosition(newPosition);
     }
