@@ -4,7 +4,7 @@
 public class Paddle : MonoBehaviour
 {
     public string moveAxis = "Horizontal";
-    public float moveSpeed = 10;
+    public float moveSpeed;
 
     private Transform t;
     private Rigidbody2D rb;
@@ -29,7 +29,7 @@ public class Paddle : MonoBehaviour
         var axis = Input.GetAxisRaw(moveAxis);
         var newPosition = t.position + moveSpeed * Time.deltaTime * axis * Vector3.right;
 
-        var gameFieldSize = GameManager.Instance.RightTop.x - GameManager.Instance.LeftBottom.x;
+        var gameFieldSize = GameManager.Instance.rightTop.x - GameManager.Instance.leftBottom.x;
         newPosition.x = Mathf.Max(newPosition.x, (size - gameFieldSize) / 2);
         newPosition.x = Mathf.Min(newPosition.x, (gameFieldSize - size) / 2);
         

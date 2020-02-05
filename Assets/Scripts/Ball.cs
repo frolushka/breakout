@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
 public class Ball : MonoBehaviour
 {
-    public float moveSpeed = 10;
+    public float moveSpeed;
     
     private Transform t;
     private Rigidbody2D rb;
@@ -18,8 +20,7 @@ public class Ball : MonoBehaviour
 
     private void Start()
     {
-        var velocity = Random.insideUnitCircle.normalized;
-        rb.velocity = moveSpeed * velocity;
+        Invoke(nameof(StartMoving), 1);
     }
 
     private void OnCollisionEnter2D(Collision2D other)
@@ -29,5 +30,21 @@ public class Ball : MonoBehaviour
             rb.velocity = (t.position - other.transform.position).normalized * moveSpeed;
         else
             rb.velocity = Vector3.Reflect(rb.velocity, other.contacts[0].normal);
+    }
+
+    private void OnBecameInvisible()
+    {
+        Destroy(gameObject);
+    }
+
+    private void StartMoving()
+    {
+        var velocity = Random.insideUnitCircle.normalized;
+        rb.velocity = moveSpeed * velocity;
+    }
+
+    private void OnDestroy()
+    {
+        GameManager.Instance.ballSpawnQueue++;
     }
 }

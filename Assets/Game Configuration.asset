@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 64df33f10bf2443669b9ec611ea06e2c, type: 3}
   m_Name: Game Configuration
   m_EditorClassIdentifier: 
-  ballMoveSpeed: 8
   paddleMoveSpeed: 8
+  ballMoveSpeed: 8
+  ballLifetime: 10
+  ballsPerGameCount: 4
   pointsForStandardBlock: 1
   pointsForBonusBlock: 2
   pointsForFreezerBlock: 5
