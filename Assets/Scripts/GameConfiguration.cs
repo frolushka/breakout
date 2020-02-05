@@ -24,11 +24,7 @@ public static class GameConfiguration
 
     public static void ReadFromCSV()
     {
-        string path = "configuration.csv";
-#if UNITY_EDITOR
-        path = Application.dataPath + "/" + path;
-#endif
-        Debug.Log(path);
+        string path = Application.streamingAssetsPath + "/configuration.csv";
         if (!File.Exists(path))
             throw new FileNotFoundException();
         using (var sr = new StreamReader(path))
