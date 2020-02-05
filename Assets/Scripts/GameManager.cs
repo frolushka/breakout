@@ -35,6 +35,10 @@ public class GameManager : MonoBehaviour
         
         LeftBottom = cam.ScreenToWorldPoint(Vector3.zero);
         RightTop = cam.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, 0));
+        
+        Debug.Log($"Left bottom: {LeftBottom}");
+        Debug.Log($"Right top: {RightTop}");
+        
         var rightBottom = new Vector2(RightTop.x, LeftBottom.y);
         var leftTop = new Vector2(LeftBottom.x, RightTop.y);
         
