@@ -10,6 +10,8 @@ public class Ball : MonoBehaviour
     private Transform t;
     private Rigidbody2D rb;
     private CircleCollider2D cc;
+
+    private bool _leftScreen;
     
     private void Awake()
     {
@@ -34,6 +36,8 @@ public class Ball : MonoBehaviour
 
     private void OnBecameInvisible()
     {
+        GameManager.Instance.BallLeftScreen();
+        _leftScreen = true;
         Destroy(gameObject);
     }
 
@@ -45,6 +49,7 @@ public class Ball : MonoBehaviour
 
     private void OnDestroy()
     {
-        GameManager.Instance.ballSpawnQueue++;
+        if (!_leftScreen)
+            GameManager.Instance.ballSpawnQueue++;
     }
 }

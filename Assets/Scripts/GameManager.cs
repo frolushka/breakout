@@ -1,17 +1,20 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    [HideInInspector]
     public Vector2 leftBottom;
+    [HideInInspector]
     public Vector2 rightTop;
 
+    [HideInInspector]
     public int ballSpawnQueue;
-
-    [SerializeField] private GameConfiguration configuration;
 
     [Space]
     
@@ -24,14 +27,24 @@ public class GameManager : MonoBehaviour
 
     [Space] 
     
-    [SerializeField] private Transform ballSpawnPosition;
+    [SerializeField] private Transform ballSpawn;
+    [SerializeField] private Transform blocksSpawn;
     
     [SerializeField] private EdgeCollider2D leftBorder;
     [SerializeField] private EdgeCollider2D rightBorder;
     [SerializeField] private EdgeCollider2D topBorder;
+    
+    [Space]
+    
+    [SerializeField] private GameObject standardBlockPrefab;
+    [SerializeField] private GameObject bonusBlockPrefab;
+    [SerializeField] private GameObject freezerBlockPrefab;
+    [SerializeField] private GameObject speedupBlockPrefab;
 
     private int _ballsCount;
     private int _score;
+
+    private bool _isGameEnded;
 
     private int BallsCount
     {
@@ -39,6 +52,8 @@ public class GameManager : MonoBehaviour
         set
         {
             _ballsCount = value;
+            if (_ballsCount <= 0)
+                EndGame(false);
             if (ballsCountLabel)
                 ballsCountLabel.text = $"Balls: {_ballsCount}";
         }
@@ -61,15 +76,20 @@ public class GameManager : MonoBehaviour
             Instance = this;
         
         SetupBorders();
+
+        GameConfiguration.ReadFromCSV();
     }
 
     private void Start()
     {
         Score = 0;
-        BallsCount = configuration.ballsPerGameCount;
-
+        BallsCount = GameConfiguration.ballsPerGameCount;
+        
+        SetupField();
         SetupPlayer();
         SpawnBall();
+
+        StartCoroutine(SpawnBalls());
     }
 
     private void Update()
@@ -79,10 +99,39 @@ public class GameManager : MonoBehaviour
         SpawnBall();
     }
 
+    private void SetupField()
+    {
+        const float offset = 0.5f;
+        const int standard = 0;
+        var bonus = standard + GameConfiguration.standardBlockProbability;
+        var freezer = bonus + GameConfiguration.bonusBlockProbability;
+        var speedup = freezer + GameConfiguration.freezerBlockProbability;
+        var startPosition = blocksSpawn.position;
+        for (int i = 0; i < 5; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                
+                var actualPosition = new Vector2(startPosition.x + (1 + offset) * (i - 2),startPosition.y + (.25f + offset) * (j - 1));
+                var random = Random.Range(0, speedup + GameConfiguration.speedupBlockProbability);
+                GameObject block;
+                if (random >= standard && random < bonus)
+                    block = Instantiate(standardBlockPrefab, actualPosition, Quaternion.identity);
+                else if (random >= bonus && random < freezer)
+                    block = Instantiate(bonusBlockPrefab, actualPosition, Quaternion.identity);
+                else if (random >= freezer && random < speedup)
+                    block = Instantiate(freezerBlockPrefab, actualPosition, Quaternion.identity);
+                else
+                    block = Instantiate(speedupBlockPrefab, actualPosition, Quaternion.identity);
+                block.transform.SetParent(blocksSpawn);
+            }
+        }
+    }
+
     private void SetupPlayer()
     {
         var player = FindObjectOfType<Paddle>();
-        player.moveSpeed = configuration.paddleMoveSpeed;
+        player.moveSpeed = GameConfiguration.paddleMoveSpeed;
     }
     
     private void SetupBorders()
@@ -108,11 +157,34 @@ public class GameManager : MonoBehaviour
     
     private void SpawnBall()
     {
-        BallsCount--;
-        var player = Instantiate(ballPrefab, ballSpawnPosition.position, Quaternion.identity);
+        if (BallsCount <= 0) return;
+        var player = Instantiate(ballPrefab, ballSpawn.position, Quaternion.identity);
         var ball = player.GetComponent<Ball>();
-        ball.moveSpeed = configuration.ballMoveSpeed;
-        Destroy(player, configuration.ballLifetime);
+        ball.moveSpeed = GameConfiguration.ballMoveSpeed;
+        Destroy(player, GameConfiguration.ballLifetime);
+    }
+
+    private void EndGame(bool isWinner)
+    {
+        _isGameEnded = true;
+        Time.timeScale = 0;
+    }
+
+    private IEnumerator SpawnBalls()
+    {
+        while (true)
+        {
+            var delay = Random.Range(GameConfiguration.minBallSpawnDelay, GameConfiguration.maxBallSpawnDelay);
+            yield return new WaitForSeconds(delay);
+            if (_isGameEnded) yield break;
+            SpawnBall();
+        }
+    }
+
+    public void BallLeftScreen()
+    {
+        BallsCount--;
+        SpawnBall();
     }
 
     public void AddScoreForBlock(Block block)
@@ -120,16 +192,16 @@ public class GameManager : MonoBehaviour
         switch (block)
         {
             case StandardBlock _:
-                _score += configuration.pointsForStandardBlock;
+                Score += GameConfiguration.pointsForStandardBlock;
                 break;
             case BonusBlock _:
-                _score += configuration.pointsForBonusBlock;
+                Score += GameConfiguration.pointsForBonusBlock;
                 break;
             case FreezerBlock _:
-                _score += configuration.pointsForFreezerBlock;
+                Score += GameConfiguration.pointsForFreezerBlock;
                 break;
             case SpeedupBlock _:
-                _score += configuration.pointsForSpeedupBlock;
+                Score += GameConfiguration.pointsForSpeedupBlock;
                 break;
         }
     }
