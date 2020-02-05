@@ -3,7 +3,7 @@
 [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
 public class Ball : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 10;
+    public float moveSpeed = 10;
     
     private Transform t;
     private Rigidbody2D rb;
@@ -18,13 +18,16 @@ public class Ball : MonoBehaviour
 
     private void Start()
     {
-        var velocity = Random.insideUnitCircle;
+        var velocity = Random.insideUnitCircle.normalized;
         rb.velocity = moveSpeed * velocity;
     }
 
     private void OnCollisionEnter2D(Collision2D other)
     {
         if (other.contactCount != 1) return;
-        rb.velocity = Vector3.Reflect(rb.velocity, other.contacts[0].normal);
+        if (other.gameObject.CompareTag("Player"))
+            rb.velocity = (t.position - other.transform.position).normalized * moveSpeed;
+        else
+            rb.velocity = Vector3.Reflect(rb.velocity, other.contacts[0].normal);
     }
 }
