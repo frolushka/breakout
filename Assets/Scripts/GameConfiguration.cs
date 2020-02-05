@@ -25,6 +25,7 @@ public static class GameConfiguration
     public static void ReadFromCSV()
     {
         string path = Application.dataPath + "/configuration.csv";
+        Debug.Log(path);
         if (!File.Exists(path))
             throw new FileNotFoundException();
         using (var sr = new StreamReader(path))
