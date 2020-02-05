@@ -24,7 +24,10 @@ public static class GameConfiguration
 
     public static void ReadFromCSV()
     {
-        string path = Application.dataPath + "/configuration.csv";
+        string path = "configuration.csv";
+#if UNITY_EDITOR
+        path = Application.dataPath + "/" + path;
+#endif
         Debug.Log(path);
         if (!File.Exists(path))
             throw new FileNotFoundException();
