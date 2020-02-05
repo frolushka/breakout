@@ -77,7 +77,7 @@ public class GameManager : MonoBehaviour
         
         SetupBorders();
 
-        GameConfiguration.ReadFromCSV();
+        StartCoroutine(GameConfiguration.ReadFromCSV());
     }
 
     private void Start()

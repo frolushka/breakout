@@ -1,5 +1,8 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.IO;
+using System.Text;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public static class GameConfiguration
 {
@@ -22,29 +25,41 @@ public static class GameConfiguration
     public static int freezerBlockProbability;
     public static int speedupBlockProbability;
 
-    public static void ReadFromCSV()
+    public static IEnumerator ReadFromCSV()
     {
-        string path = Application.streamingAssetsPath + "/configuration.csv";
-        if (!File.Exists(path))
-            throw new FileNotFoundException();
-        using (var sr = new StreamReader(path))
+        var path = Path.Combine(Application.streamingAssetsPath, "configuration.csv");
+        string[] tokens;
+#if UNITY_EDITOR
+        tokens = Encoding.UTF8.GetString(File.ReadAllBytes(path)).Split(';');
+#else
+        var www = new UnityWebRequest(path)
         {
-            var tokens = sr.ReadToEnd().Split(';');
-            paddleMoveSpeed = float.Parse(tokens[0]);
-            ballMoveSpeed = float.Parse(tokens[1]);
-            ballLifetime = int.Parse(tokens[2]);
-            ballsPerGameCount = int.Parse(tokens[3]);
-            minBallSpawnDelay = float.Parse(tokens[4]);
-            maxBallSpawnDelay = float.Parse(tokens[5]);
-            pointsForStandardBlock = int.Parse(tokens[6]);
-            pointsForBonusBlock = int.Parse(tokens[7]);
-            pointsForFreezerBlock = int.Parse(tokens[8]);
-            pointsForSpeedupBlock = int.Parse(tokens[9]);
-            standardBlockProbability = int.Parse(tokens[10]);
-            bonusBlockProbability = int.Parse(tokens[11]);
-            freezerBlockProbability = int.Parse(tokens[12]);
-            speedupBlockProbability = int.Parse(tokens[13]);
+            downloadHandler = new DownloadHandlerBuffer()
+        };
+        yield return www.SendWebRequest();
+        if (www.isHttpError || www.isNetworkError)
+        {
+            Debug.Log(www.error);
+        yield break;
         }
+        else
+            tokens = Encoding.UTF8.GetString(www.downloadHandler.data).Split(';');
+#endif
+        paddleMoveSpeed = float.Parse(tokens[0]);
+        ballMoveSpeed = float.Parse(tokens[1]);
+        ballLifetime = int.Parse(tokens[2]);
+        ballsPerGameCount = int.Parse(tokens[3]);
+        minBallSpawnDelay = float.Parse(tokens[4]);
+        maxBallSpawnDelay = float.Parse(tokens[5]);
+        pointsForStandardBlock = int.Parse(tokens[6]);
+        pointsForBonusBlock = int.Parse(tokens[7]);
+        pointsForFreezerBlock = int.Parse(tokens[8]);
+        pointsForSpeedupBlock = int.Parse(tokens[9]);
+        standardBlockProbability = int.Parse(tokens[10]);
+        bonusBlockProbability = int.Parse(tokens[11]);
+        freezerBlockProbability = int.Parse(tokens[12]);
+        speedupBlockProbability = int.Parse(tokens[13]);
+        yield return null;
     }
 
     // public void WriteToCSV()
