@@ -1,6 +1,4 @@
-﻿using System;
-using UnityEngine;
-using Random = UnityEngine.Random;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(CircleCollider2D))]
 public class Ball : MonoBehaviour
@@ -11,7 +9,7 @@ public class Ball : MonoBehaviour
     private Rigidbody2D rb;
     private CircleCollider2D cc;
 
-    private bool _leftScreen;
+    private bool _isDestroying;
     
     private void Awake()
     {
@@ -34,22 +32,39 @@ public class Ball : MonoBehaviour
             rb.velocity = Vector3.Reflect(rb.velocity, other.contacts[0].normal);
     }
 
-    private void OnBecameInvisible()
-    {
-        GameManager.Instance.BallLeftScreen();
-        _leftScreen = true;
-        Destroy(gameObject);
-    }
-
-    private void StartMoving()
+    public void StartMoving()
     {
         var velocity = Random.insideUnitCircle.normalized;
         rb.velocity = moveSpeed * velocity;
     }
 
+    public void StopMoving()
+    {
+        rb.velocity = Vector3.zero;
+    }
+
+    private void DestroyAfterLifetime()
+    {
+        if (!GameManager.Instance) return;
+        GameManager.Instance.ReuseBall(gameObject);
+    }
+
+    private void OnBecameInvisible()
+    {
+        if (!_isDestroying)
+            Destroy(gameObject);
+    }
+
     private void OnDestroy()
     {
-        if (!_leftScreen)
-            GameManager.Instance.ballSpawnQueue++;
+        if (_isDestroying || !GameManager.Instance) return;
+        _isDestroying = true;
+        GameManager.Instance.BallsCount--;
+        GameManager.Instance.SpawnBall();
+    }
+
+    private void OnApplicationQuit()
+    {
+        _isDestroying = true;
     }
 }

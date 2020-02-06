@@ -13,9 +13,6 @@ public class GameManager : MonoBehaviour
     [HideInInspector]
     public Vector2 rightTop;
 
-    [HideInInspector]
-    public int ballSpawnQueue;
-
     [Space]
     
     [SerializeField] private GameObject ballPrefab;
@@ -46,7 +43,7 @@ public class GameManager : MonoBehaviour
 
     private bool _isGameEnded;
 
-    private int BallsCount
+    public int BallsCount
     {
         get => _ballsCount;
         set
@@ -75,8 +72,6 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
             Instance = this;
         
-        SetupBorders();
-
         StartCoroutine(GameConfiguration.ReadFromCSV());
     }
 
@@ -85,6 +80,7 @@ public class GameManager : MonoBehaviour
         Score = 0;
         BallsCount = GameConfiguration.ballsPerGameCount;
         
+        SetupBorders();
         SetupField();
         SetupPlayer();
         SpawnBall();
@@ -92,11 +88,9 @@ public class GameManager : MonoBehaviour
         StartCoroutine(SpawnBalls());
     }
 
-    private void Update()
+    private void OnDisable()
     {
-        if (ballSpawnQueue <= 0) return;
-        ballSpawnQueue--;
-        SpawnBall();
+        Instance = null;
     }
 
     private void SetupField()
@@ -144,24 +138,12 @@ public class GameManager : MonoBehaviour
         rightTop = cam.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, 0));
         rightTop.x = rightTop.y / 9 * 16;
         
-        // Debug.Log($"Left bottom: {leftBottom}");
-        // Debug.Log($"Right top: {rightTop}");
-        
         var rightBottom = new Vector2(rightTop.x, leftBottom.y);
         var leftTop = new Vector2(leftBottom.x, rightTop.y);
         
         leftBorder.points = new [] { leftBottom, leftTop };
         rightBorder.points = new [] { rightBottom, rightTop };
         topBorder.points = new [] { leftTop, rightTop };
-    }
-    
-    private void SpawnBall()
-    {
-        if (BallsCount <= 0) return;
-        var player = Instantiate(ballPrefab, ballSpawn.position, Quaternion.identity);
-        var ball = player.GetComponent<Ball>();
-        ball.moveSpeed = GameConfiguration.ballMoveSpeed;
-        Destroy(player, GameConfiguration.ballLifetime);
     }
 
     private void EndGame(bool isWinner)
@@ -181,10 +163,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void BallLeftScreen()
+    public void ReuseBall(GameObject ballGameObject)
     {
-        BallsCount--;
-        SpawnBall();
+        var ball = ballGameObject.GetComponent<Ball>();
+        ball.StopMoving();
+        ballGameObject.transform.position = ballSpawn.position;
+        ball.Invoke(nameof(Ball.StartMoving), 1);
+    }
+    
+    public void SpawnBall()
+    {
+        if (BallsCount <= 0) return;
+        var ballGameObject = Instantiate(ballPrefab, ballSpawn.position, Quaternion.identity);
+        var ball = ballGameObject.GetComponent<Ball>();
+        ball.moveSpeed = GameConfiguration.ballMoveSpeed;
+        ball.Invoke("DestroyAfterLifetime", GameConfiguration.ballLifetime);
     }
 
     public void AddScoreForBlock(Block block)

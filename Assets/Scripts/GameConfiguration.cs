@@ -29,9 +29,6 @@ public static class GameConfiguration
     {
         var path = Path.Combine(Application.streamingAssetsPath, "configuration.csv");
         string[] tokens;
-#if UNITY_EDITOR
-        tokens = Encoding.UTF8.GetString(File.ReadAllBytes(path)).Split(';');
-#else
         var www = new UnityWebRequest(path)
         {
             downloadHandler = new DownloadHandlerBuffer()
@@ -40,11 +37,10 @@ public static class GameConfiguration
         if (www.isHttpError || www.isNetworkError)
         {
             Debug.Log(www.error);
-        yield break;
+            tokens = Encoding.UTF8.GetString(File.ReadAllBytes(path)).Split(';');
         }
         else
             tokens = Encoding.UTF8.GetString(www.downloadHandler.data).Split(';');
-#endif
         paddleMoveSpeed = float.Parse(tokens[0]);
         ballMoveSpeed = float.Parse(tokens[1]);
         ballLifetime = int.Parse(tokens[2]);
