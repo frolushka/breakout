@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = UnityEngine.Random;
 
 public class GameManager : MonoBehaviour
 {
@@ -75,8 +73,11 @@ public class GameManager : MonoBehaviour
         StartCoroutine(GameConfiguration.ReadFromCSV());
     }
 
-    private void Start()
+    private IEnumerator Start()
     {
+        while (!GameConfiguration.isInitialized)
+            yield return null;
+        
         Score = 0;
         BallsCount = GameConfiguration.ballsPerGameCount;
         
@@ -85,7 +86,7 @@ public class GameManager : MonoBehaviour
         SetupPlayer();
         SpawnBall();
 
-        StartCoroutine(SpawnBalls());
+        yield return SpawnBalls();
     }
 
     private void OnDisable()
@@ -104,8 +105,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < 5; i++)
         {
             for (int j = 0; j < 3; j++)
-            {
-                
+            {   
                 var actualPosition = new Vector2(startPosition.x + (1 + offset) * (i - 2),startPosition.y + (.25f + offset) * (j - 1));
                 var random = Random.Range(0, speedup + GameConfiguration.speedupBlockProbability);
                 GameObject block;

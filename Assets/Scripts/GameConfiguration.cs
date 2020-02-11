@@ -6,6 +6,8 @@ using UnityEngine.Networking;
 
 public static class GameConfiguration
 {
+    public static bool isInitialized;
+    
     public static float paddleMoveSpeed;
     
     public static float ballMoveSpeed;
@@ -55,6 +57,7 @@ public static class GameConfiguration
         bonusBlockProbability = int.Parse(tokens[11]);
         freezerBlockProbability = int.Parse(tokens[12]);
         speedupBlockProbability = int.Parse(tokens[13]);
+        isInitialized = true;
         yield return null;
     }
 
